@@ -1,1 +1,1 @@
-# dol
+# DOL (Dynamic Optimization Library)
