@@ -14,14 +14,13 @@ class ModuleTests(unittest.TestCase):
         lb = 0.0
         rb = 8.0
         r = "1"
-        method = "Piyavsky"
+        method = class_obj.methods.Piyavsky
         max_iter = 1
         class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
 
         # Validation
         self.assertRaises(TypeError, class_obj.Minimize, lb, rb, r, method, max_iter)
-
 
     def test_ExceptOnInvalidLbParam(self):
         # Initialization
@@ -29,14 +28,13 @@ class ModuleTests(unittest.TestCase):
         lb = "0."
         rb = 1.0
         r = 1.0
-        method = "Piyavsky"
+        method = class_obj.methods.Piyavsky
         max_iter = 1
         class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
 
         # Validation
         self.assertRaises(TypeError, class_obj.Minimize, lb, rb, r, method, max_iter)
-
 
     def test_ExceptOnInvalidRbParam(self):
         # Initialization
@@ -44,7 +42,7 @@ class ModuleTests(unittest.TestCase):
         lb = 0.0
         rb = "1.0"
         r = 1.0
-        method = "Piyavsky"
+        method = class_obj.methods.Piyavsky
         max_iter = 1
         class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
@@ -52,14 +50,27 @@ class ModuleTests(unittest.TestCase):
         # Validation
         self.assertRaises(TypeError, class_obj.Minimize, lb, rb, r, method, max_iter)
 
-    
+    def test_ExceptOnInvalidMethodParam(self):
+        # Initialization
+        class_obj = opt()
+        lb = 0.0
+        rb = 1.0
+        r = 1.0
+        method = "Method"
+        max_iter = 1
+        class_obj.SetFunctionParameters(2, 3, 3, 5)
+        # Action
+
+        # Validation
+        self.assertRaises(TypeError, class_obj.Minimize, lb, rb, r, method, max_iter)
+
     def test_ExceptOnInvalidMaxIterParam(self):
         # Initialization
         class_obj = opt()
         lb = 0.0
         rb = 1.0
         r = 1.0
-        method = "Piyavsky"
+        method = class_obj.methods.Piyavsky
         max_iter = "1"
         class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
@@ -73,7 +84,7 @@ class ModuleTests(unittest.TestCase):
         lb = 0.0
         rb = 8.0
         r = 2.0
-        method = "Piyavsky"
+        method = class_obj.methods.Piyavsky
         max_iter = None
         raise_except = False
         class_obj.SetFunctionParameters(2, 3, 3, 5)
@@ -92,7 +103,7 @@ class ModuleTests(unittest.TestCase):
         rb = 8.0
         r = 2.0
         expected_func_value = -4.92057565
-        method = "Piyavsky"
+        method = class_obj.methods.Piyavsky
         max_iter = 800
         class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
@@ -107,8 +118,23 @@ class ModuleTests(unittest.TestCase):
         rb = 8.0
         r = 2.0
         expected_func_value = -4.920616335
-        method = "Strongin"
+        method = class_obj.methods.Strongin
         max_iter = 800
+        class_obj.SetFunctionParameters(2, 3, 3, 5)
+        # Action
+        res = class_obj.Minimize(lb, rb, r, method, max_iter=max_iter)
+        # Validation
+        self.assertAlmostEqual(res.minimum[1], expected_func_value)
+
+    def test_CorrectMinFuncValueBruteForse(self):
+        # Initialization
+        class_obj = opt()
+        lb = 0.0
+        rb = 8.0
+        r = 2.0
+        expected_func_value = -4.80579207
+        method = class_obj.methods.BruteForse
+        max_iter = 100
         class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
         res = class_obj.Minimize(lb, rb, r, method, max_iter)

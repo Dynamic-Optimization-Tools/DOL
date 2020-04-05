@@ -17,10 +17,10 @@ class opt(object):
     _eps = 0.01
     _sol = solution()
     _use_method = None
-    a = None
-    b = None
-    c = None
-    d = None
+    _a = None
+    _b = None
+    _c = None
+    _d = None
     
     class methods():
         Piyavsky = "Piyavsky"
@@ -67,19 +67,43 @@ class opt(object):
 
     def __SetMin(self, _min):
         self._minimum = _min
+    
+    def __PrintError(self, message):
+        print('\x1b[1;31m' + 'ERROR: ' + '\x1b[0m' + message)
 
     def __CorrectnessParameters(self, lb, rb, r, max_iter, method):
-        if type(lb) is not float or type(rb) is not float \
-            or type(r) is not float or method not in self._methods or (type(max_iter) is not int \
-                and max_iter is not None):
+        if type(lb) is not float:
+            self.__PrintError("Invalid type of parameter \'lb\' (expected \'float\')")
             return False
-        return True
+        elif type(rb) is not float:
+            self.__PrintError("Invalid type of parameter \'rb\' (expected \'float\')")
+            return False
+        elif type(r) is not float:
+            self.__PrintError("Invalid type of parameter \'r\' (expected \'float\')")
+            return False
+        elif type(max_iter) is not int and max_iter is not None:
+            self.__PrintError("Invalid type of parameter \'max_iter\' (expected \'float\' or \'None\')")
+            return False
+        elif method not in self._methods:
+            self.__PrintError("Invalid method's name")
+            return False
+        else:
+            return True
 
     def SetFunctionParameters(self, a, b, c, d):
-        self.a = a
-        self.b = b
-        self.c = c
-        self.d = d
+        if type(a) is not int and type(a) is not float:
+            self.__PrintError("Invalid type of parameter \'a\' (expected \'float\' or \'int\')")
+        elif type(a) is not int and type(a) is not float:
+            self.__PrintError("Invalid type of parameter \'b\' (expected \'float\' or \'int\')")
+        elif type(a) is not int and type(a) is not float:
+            self.__PrintError("Invalid type of parameter \'c\' (expected \'float\' or \'int\')")
+        elif type(a) is not int and type(a) is not float:
+            self.__PrintError("Invalid type of parameter \'d\' (expected \'float\' or \'int\')")
+        else:
+            self._a = a
+            self._b = b
+            self._c = c
+            self._d = d
 
     def __InitializeData(self, lb, rb, r, max_iter, method, eps):
         self.__SetLb(lb)
@@ -92,7 +116,7 @@ class opt(object):
             self.__SetEps(eps)
 
     def Func(self, x):
-        return self.a * math.sin(self.b * x) + self.c * math.cos(self.d * x)
+        return self._a * math.sin(self._b * x) + self._c * math.cos(self._d * x)
 
     def __UpdateMinValue(self, *args):
         if self._minimum is None:
@@ -124,13 +148,6 @@ class opt(object):
                 max_charact = interval.GetIR()
                 num_interval = num
         return num_interval
-
-    def PrintIntervals(self, intervals):
-        s = ""
-        for interval in intervals:
-            s += "( " + str(interval.GetILb()[0]) + "; " +   str(interval.GetIRb()[0]) + " )"
-        s += '\n'
-        print(s)
 
     def __GetNewIntervals(self, intervals, lipsh, method):
         num = self.__GetBestInterval(intervals)
