@@ -13,7 +13,7 @@ class opt(object):
     max_iter = 100
     minimum = (None, None)
     spent_iter = 0
-    eps = 0.0001
+    eps = 0.01
     methods = { 
                "piyavsky": interval.GetPiyavskyCharacteristic,
                "strongin": interval.GetStronginCharacteristic
@@ -21,13 +21,6 @@ class opt(object):
     
     def __init__(self):
         pass
-
-    def __CorrectnessParameters(self, _lb, _rb, _r, _max_iter):
-        if type(_lb) is not float or type(_rb) is not float \
-            or type(_r) is not float or type(_max_iter) is not int \
-                and _max_iter is not None:
-            return False
-        return True
 
     def __SetLb(self, _lb):
         self.lb = _lb
@@ -48,6 +41,13 @@ class opt(object):
     def __SetMin(self, _min):
         self.minimum = _min
 
+    def __CorrectnessParameters(self, _lb, _rb, _r, _max_iter):
+        if type(_lb) is not float or type(_rb) is not float \
+            or type(_r) is not float or (type(_max_iter) is not int \
+                and _max_iter is not None):
+            return False
+        return True
+
     def __InitializeData(self, _lb, _rb, _r, _max_iter):
         self.__SetLb(_lb)
         self.__SetRb(_rb)
@@ -56,16 +56,9 @@ class opt(object):
             self.__SetMaxIter(_max_iter)
 
     def TestFunc(self, x):
-        #return math.sin(x) * math.cos(x)
-        #return x**2
-        #return x
-        #return 2 * math.sin(3 * x) + 3 * math.cos(5 * x)
-        return (x-1)**2 
+        return 2 * math.sin(3 * x) + 3 * math.cos(5 * x)
 
     def __UpdateMinValue(self, *args):
-        #for i in args:
-        #    print(i)
-        #print("===========================")
         if self.minimum == (None, None):
             self.__SetMin(args[0])
         for arg in args:
@@ -77,16 +70,15 @@ class opt(object):
 
 
     def __GetLipsh(self, _intervals):
-        _M = None
+        M = None
         for i, i_interval in enumerate(_intervals):
-            for j, j_interval in enumerate(_intervals[i:]):
-                _M_interval = abs((j_interval.GetIRb()[1] - i_interval.GetILb()[1]) / (j_interval.GetIRb()[0] - i_interval.GetILb()[0]))
-                if _M is None:
-                    _M = _M_interval
+            for j_interval in  _intervals[i:]:
+                M_interval = abs((j_interval.GetIRb()[1] - i_interval.GetILb()[1]) / (j_interval.GetIRb()[0] - i_interval.GetILb()[0]))
+                if M is None:
+                    M = M_interval
                 else:
-                    _M = _M_interval if _M < _M_interval else _M
-        print("Lipshitz const = ", self.r * _M)
-        return 1 if _M == 0 else self.r * _M
+                    M = M_interval if M < M_interval else M
+        return 1 if M == 0 else self.r * M
 
     def __GetBestInterval(self, _intervals):
         max_charact = _intervals[0].GetIR()
@@ -106,16 +98,14 @@ class opt(object):
 
     def __GetNextPoint(self, _intervals, _lipsh, _method):
         _num = self.__GetBestInterval(_intervals)
-        self.PrintIntervals(_intervals)
         if self.__CheckStop(_intervals[_num]):
             return 0
-        _old_interval = _intervals.pop(_num)
-        _x = 0.5 * (_old_interval.GetIRb()[0] + _old_interval.GetILb()[0]) - 0.5 * ((_old_interval.GetIRb()[1] - _old_interval.GetILb()[1]) / _lipsh)
-        print("Next x = ", _x)
+        old_interval = _intervals.pop(_num)
+        _x = 0.5 * (old_interval.GetIRb()[0] + old_interval.GetILb()[0]) - 0.5 * ((old_interval.GetIRb()[1] - old_interval.GetILb()[1]) / _lipsh)
         _y = self.TestFunc(_x)
         self.__UpdateMinValue((_x,_y))
-        _new_interval_l = interval(_old_interval.GetILb(), (_x, _y)) 
-        _new_interval_r = interval((_x, _y), _old_interval.GetIRb())
+        _new_interval_l = interval(old_interval.GetILb(), (_x, _y)) 
+        _new_interval_r = interval((_x, _y), old_interval.GetIRb())
 
         _method(_new_interval_l, _lipsh)
         _method(_new_interval_r, _lipsh)
@@ -124,21 +114,19 @@ class opt(object):
         new_intervals_2 = []
 
         if _num != len(_intervals):
-            new_intervals_2 = _intervals[_num + 1:]
+            new_intervals_2 = _intervals[_num:]
         _intervals = new_intervals_1
         _intervals.extend([_new_interval_l, _new_interval_r])
         _intervals.extend(new_intervals_2)
-
-        self.PrintIntervals(_intervals)
         return _intervals
 
     def __CheckStop(self, _interval):
         return True if _interval.GetIRb()[0] - _interval.GetILb()[0] < self.eps else False
 
-    def Minimize(self, lb, rb, r, func, method, max_iter=None):
+    def Minimize(self, lb, rb, r, method, max_iter=None):
         intervals = list()
-        _lipsh = None
-        _method = self.methods[method]
+        lipsh = None
+        method = self.methods[method]
 
         if self.__CorrectnessParameters(lb, rb, r, max_iter):
             self.__InitializeData(lb, rb, r, max_iter)
@@ -152,16 +140,10 @@ class opt(object):
             if self.spent_iter == self.max_iter:
                 return (self.minimum, self.spent_iter)
             if type(intervals) is int:
-                print(self.minimum)
-                print(self.spent_iter)
-                return 0
+                return (self.minimum, self.spent_iter)
             self.__IncreaseIterCount()
-            _lipsh = self.__GetLipsh(intervals)
+            lipsh = self.__GetLipsh(intervals)
             for iterv in intervals:
-                _method(iterv, _lipsh)
-            intervals = self.__GetNextPoint(intervals, _lipsh, _method)
-        return
-
-a = opt()
-a.Minimize(-1., 2., 2., "", "piyavsky")
-print(a.minimum)
+                method(iterv, lipsh)
+            intervals = self.__GetNextPoint(intervals, lipsh, method)
+            

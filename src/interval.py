@@ -1,4 +1,5 @@
 import sys
+import math
 
 class interval(object):
     _i_lb = (None, None)    # Left border of the interval: (x, y)
@@ -32,7 +33,7 @@ class interval(object):
 
     def GetPiyavskyCharacteristic(self, _lip):
         try:
-            self._i_R = ((self._i_rb[1] + self._i_lb[1]) / 2 ) - 0.5 * (self._i_rb[0] - self._i_lb[0]) * _lip 
+            self._i_R = 0.5 * _lip * (self._i_rb[0] - self._i_lb[0])  - 0.5 * (self._i_rb[1] + self._i_lb[1])
             return 0
         except TypeError:
             print("Incorrect type of variable in \'GetPiyavskyCharacteristic\' function")
@@ -41,8 +42,8 @@ class interval(object):
     def GetStronginCharacteristic(self, _lip):
         try:
             self._i_R = _lip * (self._i_rb[0] - self._i_lb[0]) + \
-                ((self._i_rb[1] - self._i_lb[1])**2) / (_lip * \
-                (self._i_rb[0] - self._i_lb[0])) -2 * (self._i_rb[1] + self._i_lb[1])
+                math.pow((self._i_rb[1] - self._i_lb[1]), 2) / (_lip * \
+                (self._i_rb[0] - self._i_lb[0])) - 2 * (self._i_rb[1] + self._i_lb[1])
         except TypeError:
             print("ERROR: Incorrect type of variable in \'GetStronginCharacteristic\' function.")
             sys.exit(1)

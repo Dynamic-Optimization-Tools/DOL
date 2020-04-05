@@ -12,14 +12,14 @@ class ModuleTests(unittest.TestCase):
         # Initialization
         class_obj = opt()
         lb = 0.0
-        rb = 1.0
+        rb = 8.0
         r = "1"
-        func = ""
-        max_iter = 1 
+        method = "piyavsky"
+        max_iter = 1
         # Action
 
         # Validation
-        self.assertRaises(TypeError, class_obj.Minimize, rb, lb, r, func, max_iter)
+        self.assertRaises(TypeError, class_obj.Minimize, lb, rb, r, method, max_iter)
 
 
     def test_ExceptOnInvalidLbParam(self):
@@ -28,12 +28,12 @@ class ModuleTests(unittest.TestCase):
         lb = "0."
         rb = 1.0
         r = 1.0
-        func = ""
+        method = "piyavsky"
         max_iter = 1    
         # Action
 
         # Validation
-        self.assertRaises(TypeError, class_obj.Minimize, rb, lb, r, func, max_iter)
+        self.assertRaises(TypeError, class_obj.Minimize, lb, rb, r, method, max_iter)
 
 
     def test_ExceptOnInvalidRbParam(self):
@@ -42,12 +42,12 @@ class ModuleTests(unittest.TestCase):
         lb = 0.0
         rb = "1.0"
         r = 1.0
-        func = ""
+        method = "piyavsky"
         max_iter = 1    
         # Action
 
         # Validation
-        self.assertRaises(TypeError, class_obj.Minimize, rb, lb, r, func, max_iter)
+        self.assertRaises(TypeError, class_obj.Minimize, lb, rb, r, method, max_iter)
 
     
     def test_ExceptOnInvalidMaxIterParam(self):
@@ -56,29 +56,57 @@ class ModuleTests(unittest.TestCase):
         lb = 0.0
         rb = 1.0
         r = 1.0
-        func = ""
+        method = "piyavsky"
         max_iter = "1"  
         # Action
 
         # Validation
-        self.assertRaises(TypeError, class_obj.Minimize, rb, lb, r, func, max_iter)
+        self.assertRaises(TypeError, class_obj.Minimize, lb, rb, r, method, max_iter)
 
     def test_DoesNotRaiseOnNoneMaxIter(self):
         # Initialization
         class_obj = opt()
         lb = 0.0
-        rb = 1.0
-        r = 1.0
-        func = ""
+        rb = 8.0
+        r = 2.0
+        method = "piyavsky"
         max_iter = None
         raise_except = False
         # Action
         try:
-            class_obj.Minimize(rb, lb, r, func, max_iter)
+            class_obj.Minimize(lb, rb, r, method, max_iter)
         except:
             raise_except = True
         # Validation
         self.assertEqual(False, raise_except)
+
+    def test_CorrectMinFuncValuePiyavsky(self):
+        # Initialization
+        class_obj = opt()
+        lb = 0.0
+        rb = 8.0
+        r = 2.0
+        expected_func_value = -4.92057565
+        method = "piyavsky"
+        max_iter = 800
+        # Action
+        class_obj.Minimize(lb, rb, r, method, max_iter)
+        # Validation
+        self.assertAlmostEqual(class_obj.minimum[1], expected_func_value)
+
+    def test_CorrectMinFuncValueStrongin(self):
+        # Initialization
+        class_obj = opt()
+        lb = 0.0
+        rb = 8.0
+        r = 2.0
+        expected_func_value = -4.920616335
+        method = "strongin"
+        max_iter = 800
+        # Action
+        class_obj.Minimize(lb, rb, r, method, max_iter)
+        # Validation
+        self.assertAlmostEqual(class_obj.minimum[1], expected_func_value)
         
 
 if __name__ == '__main__':
