@@ -71,6 +71,7 @@ class opt(object):
     def __PrintError(self, message):
         print('\x1b[1;31m' + 'ERROR: ' + '\x1b[0m' + message)
 
+<<<<<<< HEAD
     def __CorrectnessParameters(self, lb, rb, r, max_iter, method):
         if type(lb) is not float:
             self.__PrintError("Invalid type of parameter \'lb\' (expected \'float\')")
@@ -83,6 +84,12 @@ class opt(object):
             return False
         elif type(max_iter) is not int and max_iter is not None:
             self.__PrintError("Invalid type of parameter \'max_iter\' (expected \'float\' or \'None\')")
+=======
+    def __CorrectnessParameters(self, lb, rb, r, max_iter):
+        if type(lb) is not float or type(rb) is not float \
+            or type(r) is not float or (type(max_iter) is not int \
+                and max_iter is not None):
+>>>>>>> gui: integrated core library to gui
             return False
         elif method not in self._methods:
             self.__PrintError("Invalid method's name")
@@ -182,7 +189,7 @@ class opt(object):
         intervals = list()
         lipsh = None
 
-        if self.__CorrectnessParameters(lb, rb, r, max_iter, method):
+        if self.__CorrectnessParameters(lb, rb, r, max_iter):
             self.__InitializeData(lb, rb, r, max_iter, method, eps)
         else:
             raise TypeError("Invalid type of parameters")

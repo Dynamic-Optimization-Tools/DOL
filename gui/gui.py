@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
+import sys
 
-# Form implementation generated from reading ui file 'gui.ui'
-#
-# Created by: PyQt5 UI code generator 5.14.2
-#
-# WARNING! All changes made in this file will be lost!
-
-
+from src.opt import opt
 from PyQt5 import QtCore, QtGui, QtWidgets
+from gui.mplwidget import MplWidget
+from PyQt5.uic import loadUi
 
+from matplotlib.backends.backend_qt5agg import (NavigationToolbar2QT as NavigationToolbar)
+ 
 class params:
     a = None
     b = None
@@ -18,6 +16,7 @@ class params:
     left_bound = None
     right_bound = None
     max_iter = None
+    method = None
 
     def __init__(self, a=1, b=1, c=1, d=1, r=2, left_bound=0 , right_bound=10, max_iter=100):
         self.a = a
@@ -33,7 +32,7 @@ class params:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1098, 568)
+        MainWindow.resize(1100, 600)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -161,6 +160,22 @@ class Ui_MainWindow(object):
         self.pushButtonCalculate.setFont(font)
         self.pushButtonCalculate.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButtonCalculate.setObjectName("pushButtonCalculate")
+        self.solutionX = QtWidgets.QLabel(self.groupBox)
+        self.solutionX.setGeometry(QtCore.QRect(360, 350, 200, 21))
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(14)
+        self.solutionX.setFont(font)
+        self.solutionX.setText("")
+        self.solutionX.setObjectName("solutionX")
+        self.solutionY = QtWidgets.QLabel(self.groupBox)
+        self.solutionY.setGeometry(QtCore.QRect(360, 380, 200, 21))
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(14)
+        self.solutionY.setFont(font)
+        self.solutionY.setText("")
+        self.solutionY.setObjectName("solutionY")
         self.labelInterval.raise_()
         self.labelFunc.raise_()
         self.funcParamA.raise_()
@@ -177,11 +192,22 @@ class Ui_MainWindow(object):
         self.radioButtonStrongin.raise_()
         self.radioButtonBrutforce.raise_()
         self.pushButtonCalculate.raise_()
+        self.solutionX.raise_()
+        self.solutionY.raise_()
         self.MplWidget = MplWidget(self.centralwidget)
         self.MplWidget.setGeometry(QtCore.QRect(580, 20, 511, 541))
         self.MplWidget.setObjectName("MplWidget")
+        self.pushButtonClear = QtWidgets.QPushButton(self.groupBox)
+        self.pushButtonClear.setGeometry(QtCore.QRect(200, 480, 161, 61))
+        self.pushButtonClear.setFont(font)
+        self.pushButtonClear.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButtonClear.setObjectName("pushButtonClear")
+        self.pushButtonClear.raise_()
+        self.pushButtonClear.clicked.connect(self.ClearPlot)
         MainWindow.setCentralWidget(self.centralwidget)
 
+        self.pushButtonCalculate.clicked.connect(self.DisplaySolution)
+        MainWindow.addToolBar(NavigationToolbar(self.MplWidget.canvas, MainWindow))
         self.initInputContainers()
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -198,6 +224,7 @@ class Ui_MainWindow(object):
         self.radioButtonStrongin.setText(_translate("MainWindow", "Метод Стронгина"))
         self.radioButtonBrutforce.setText(_translate("MainWindow", "Метод перебора"))
         self.pushButtonCalculate.setText(_translate("MainWindow", "Вычислить"))
+        self.pushButtonClear.setText(_translate("MainWindow", "Очистить"))
 
     def initInputContainers(self):
         default_params = params()
@@ -211,15 +238,63 @@ class Ui_MainWindow(object):
         self.maxIterCount.setPlainText(str(default_params.max_iter))
         self.radioButtonPiyavsky.setChecked(True)
 
+    def run(self):
+        app = QtWidgets.QApplication(sys.argv)
+        MainWindow = QtWidgets.QMainWindow()
+        ui = Ui_MainWindow()
+        ui.setupUi(MainWindow)
+        MainWindow.show()
+        sys.exit(app.exec_())
 
-from mplwidget import MplWidget
+    def ClearPlot(self):
+        self.MplWidget.canvas.axes.cla()
+        self.MplWidget.canvas.axes.clear()
 
+    def DisplaySolution(self):
+        optimizer = opt()
+        opt_params = params()
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+        opt_params.a = float(self.funcParamA.toPlainText())
+        opt_params.b = float(self.funcParamB.toPlainText())
+        opt_params.c = float(self.funcParamC.toPlainText())
+        opt_params.d = float(self.funcParamD.toPlainText())
+        opt_params.left_bound = float(self.funcParamLeftB.toPlainText())
+        opt_params.right_bound = float(self.funcParamRightB.toPlainText())
+        opt_params.max_iter = int(self.maxIterCount.toPlainText())
+        opt_params.r = float(self.r.toPlainText())
+
+        if self.radioButtonBrutforce.isChecked():
+            opt_params.method = optimizer.methods.BruteForse
+        elif self.radioButtonPiyavsky.isChecked():
+            opt_params.method = optimizer.methods.Piyavsky
+        elif self.radioButtonStrongin.isChecked():
+            opt_params.method = optimizer.methods.Strongin
+
+        for param in dir(opt_params):
+            if "__" not in param:
+                print(param, "=", getattr(opt_params, param), type(getattr(opt_params, param)))
+
+        optimizer.SetFunctionParameters(opt_params.a, opt_params.b, opt_params.c, opt_params.d)
+        solution = optimizer.Minimize(opt_params.left_bound, opt_params.right_bound, opt_params.r, opt_params.method, max_iter=params.max_iter)
+
+        points_multiplier = 100
+        num_points = int(abs(opt_params.right_bound - opt_params.left_bound) * points_multiplier)
+        step = abs(opt_params.right_bound - opt_params.left_bound)/num_points
+
+        x = []
+        for i in range(num_points):
+            x.append(i * step + opt_params.left_bound)
+
+        y = [optimizer.Func(point) for point in x]
+
+        self.MplWidget.canvas.axes.plot(x, y)
+        
+        for point in solution.points:
+            self.MplWidget.canvas.axes.plot(point[0], point[1], color="green", marker="*")
+
+        self.MplWidget.canvas.axes.plot(solution.minimum[0], solution.minimum[1], color="red", marker="o")
+        self.solutionX.setText("x = " + str(round(solution.minimum[0], 7)))
+        self.solutionY.setText("y = " + str(round(solution.minimum[1], 7)))
+
+        self.MplWidget.canvas.draw()
+
