@@ -5,19 +5,29 @@ from os.path import dirname as up
 root_dir = os.path.join(up(os.path.abspath(os.curdir)))
 sys.path.insert(0, root_dir)
 from src.interval import interval
+from src.solution import solution
 
 class opt(object):
     lb = None
     rb = None
     r = None
     max_iter = 100
-    minimum = (None, None)
+    minimum = None
     spent_iter = 0
     eps = 0.01
+    sol = solution()
+    use_method = None
     methods = { 
-               "piyavsky": interval.GetPiyavskyCharacteristic,
-               "strongin": interval.GetStronginCharacteristic
+               "Piyavsky": interval.GetPiyavskyCharacteristic,
+               "Strongin": interval.GetStronginCharacteristic,
+               "BruteForse": interval.GetBruteForceCharacteristic
               }
+
+    next_point = {
+                  "Piyavsky": lambda _x_l, _x_r, _y_l, _y_r, _lipsh: 0.5 * (_x_r + _x_l) - 0.5 * ((_y_r - _y_l) / _lipsh),
+                  "Strongin": lambda _x_l, _x_r, _y_l, _y_r, _lipsh: 0.5 * (_x_r + _x_l) - 0.5 * ((_y_r - _y_l) / _lipsh),
+                  "BruteForse": lambda _x_l, _x_r, _y_l, _y_r, _lipsh: _x_l + (_x_r - _x_l) / 2.0
+                 }
     
     def __init__(self):
         pass
@@ -31,35 +41,45 @@ class opt(object):
     def __SetR(self, _r):
         self.r = _r
 
+    def __SetMethod(self, _method):
+        self.use_method = _method
+
     def __SetSpentIter(self, _spent_iter):
         self.spent_iter = _spent_iter
 
     def __SetMaxIter(self, _max_iter):
         self.max_iter = _max_iter
 
-    
+    def __SetEps(self, _eps):
+        self.eps = _eps
+
     def __SetMin(self, _min):
         self.minimum = _min
+        
+    #def
 
-    def __CorrectnessParameters(self, _lb, _rb, _r, _max_iter):
-        if type(_lb) is not float or type(_rb) is not float \
-            or type(_r) is not float or (type(_max_iter) is not int \
-                and _max_iter is not None):
+    def __CorrectnessParameters(self, lb, rb, r, max_iter, method):
+        if type(lb) is not float or type(rb) is not float \
+            or type(r) is not float or method not in self.methods or (type(max_iter) is not int \
+                and max_iter is not None):
             return False
         return True
 
-    def __InitializeData(self, _lb, _rb, _r, _max_iter):
-        self.__SetLb(_lb)
-        self.__SetRb(_rb)
-        self.__SetR(_r)
-        if _max_iter is not None:
-            self.__SetMaxIter(_max_iter)
+    def __InitializeData(self, lb, rb, r, max_iter, method, eps):
+        self.__SetLb(lb)
+        self.__SetRb(rb)
+        self.__SetR(r)
+        self.__SetMethod(method)
+        if max_iter is not None:
+            self.__SetMaxIter(max_iter)
+        if eps is not None:
+            self.__SetEps(eps)
 
     def TestFunc(self, x):
         return 2 * math.sin(3 * x) + 3 * math.cos(5 * x)
 
     def __UpdateMinValue(self, *args):
-        if self.minimum == (None, None):
+        if self.minimum is None:
             self.__SetMin(args[0])
         for arg in args:
             if self.minimum[1] > arg[1]:
@@ -96,54 +116,62 @@ class opt(object):
         s += '\n'
         print(s)
 
-    def __GetNextPoint(self, _intervals, _lipsh, _method):
-        _num = self.__GetBestInterval(_intervals)
-        if self.__CheckStop(_intervals[_num]):
+    def __GetNewIntervals(self, intervals, lipsh, method):
+        num = self.__GetBestInterval(intervals)
+        if self.__CheckStop(intervals[num]):
             return 0
-        old_interval = _intervals.pop(_num)
-        _x = 0.5 * (old_interval.GetIRb()[0] + old_interval.GetILb()[0]) - 0.5 * ((old_interval.GetIRb()[1] - old_interval.GetILb()[1]) / _lipsh)
-        _y = self.TestFunc(_x)
-        self.__UpdateMinValue((_x,_y))
-        _new_interval_l = interval(old_interval.GetILb(), (_x, _y)) 
-        _new_interval_r = interval((_x, _y), old_interval.GetIRb())
+        old_interval = intervals.pop(num)
+        x = self.next_point[self.use_method](old_interval.GetILb()[0], old_interval.GetIRb()[0], old_interval.GetILb()[1], \
+            old_interval.GetIRb()[1], lipsh)
+        y = self.TestFunc(x)
+        self.sol.points.append((x, y))
+        self.__UpdateMinValue((x, y))
+        new_interval_l = interval(old_interval.GetILb(), (x, y)) 
+        new_interval_r = interval((x, y), old_interval.GetIRb())
 
-        _method(_new_interval_l, _lipsh)
-        _method(_new_interval_r, _lipsh)
+        method(new_interval_l, lipsh)
+        method(new_interval_r, lipsh)
 
-        new_intervals_1 = _intervals[:_num]
+        new_intervals_1 = intervals[:num]
         new_intervals_2 = []
 
-        if _num != len(_intervals):
-            new_intervals_2 = _intervals[_num:]
-        _intervals = new_intervals_1
-        _intervals.extend([_new_interval_l, _new_interval_r])
-        _intervals.extend(new_intervals_2)
-        return _intervals
+        if num != len(intervals):
+            new_intervals_2 = intervals[num:]
+        intervals = new_intervals_1
+        intervals.extend([new_interval_l, new_interval_r])
+        intervals.extend(new_intervals_2)
+        return intervals
 
     def __CheckStop(self, _interval):
         return True if _interval.GetIRb()[0] - _interval.GetILb()[0] < self.eps else False
 
-    def Minimize(self, lb, rb, r, method, max_iter=None):
+    def Minimize(self, lb, rb, r, method, max_iter=None, eps=None):
         intervals = list()
         lipsh = None
-        method = self.methods[method]
 
-        if self.__CorrectnessParameters(lb, rb, r, max_iter):
-            self.__InitializeData(lb, rb, r, max_iter)
+        if self.__CorrectnessParameters(lb, rb, r, max_iter, method):
+            self.__InitializeData(lb, rb, r, max_iter, method, eps)
         else:
             raise TypeError("Invalid type of parameters")
-        
+
+        method = self.methods[method]
         initial_intervals = interval((lb, self.TestFunc(lb)), (rb, self.TestFunc(rb)))
+        self.sol.points.append((lb, self.TestFunc(lb)))
+        self.sol.points.append((rb, self.TestFunc(rb)))
         self.__UpdateMinValue(initial_intervals.GetILb(), initial_intervals.GetIRb())
         intervals.append(initial_intervals)
         while True:
             if self.spent_iter == self.max_iter:
-                return (self.minimum, self.spent_iter)
+                self.sol.minimum = self.minimum
+                return self.sol
             if type(intervals) is int:
-                return (self.minimum, self.spent_iter)
+                self.sol.minimum = self.minimum
+                return self.sol
             self.__IncreaseIterCount()
+            self.sol.spent_iter = self.spent_iter
             lipsh = self.__GetLipsh(intervals)
             for iterv in intervals:
                 method(iterv, lipsh)
-            intervals = self.__GetNextPoint(intervals, lipsh, method)
+            intervals = self.__GetNewIntervals(intervals, lipsh, method)
+
             

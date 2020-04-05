@@ -14,7 +14,7 @@ class ModuleTests(unittest.TestCase):
         lb = 0.0
         rb = 8.0
         r = "1"
-        method = "piyavsky"
+        method = "Piyavsky"
         max_iter = 1
         # Action
 
@@ -28,7 +28,7 @@ class ModuleTests(unittest.TestCase):
         lb = "0."
         rb = 1.0
         r = 1.0
-        method = "piyavsky"
+        method = "Piyavsky"
         max_iter = 1    
         # Action
 
@@ -42,7 +42,7 @@ class ModuleTests(unittest.TestCase):
         lb = 0.0
         rb = "1.0"
         r = 1.0
-        method = "piyavsky"
+        method = "Piyavsky"
         max_iter = 1    
         # Action
 
@@ -56,7 +56,7 @@ class ModuleTests(unittest.TestCase):
         lb = 0.0
         rb = 1.0
         r = 1.0
-        method = "piyavsky"
+        method = "Piyavsky"
         max_iter = "1"  
         # Action
 
@@ -69,7 +69,7 @@ class ModuleTests(unittest.TestCase):
         lb = 0.0
         rb = 8.0
         r = 2.0
-        method = "piyavsky"
+        method = "Piyavsky"
         max_iter = None
         raise_except = False
         # Action
@@ -87,7 +87,7 @@ class ModuleTests(unittest.TestCase):
         rb = 8.0
         r = 2.0
         expected_func_value = -4.92057565
-        method = "piyavsky"
+        method = "Piyavsky"
         max_iter = 800
         # Action
         class_obj.Minimize(lb, rb, r, method, max_iter)
@@ -101,7 +101,7 @@ class ModuleTests(unittest.TestCase):
         rb = 8.0
         r = 2.0
         expected_func_value = -4.920616335
-        method = "strongin"
+        method = "Strongin"
         max_iter = 800
         # Action
         class_obj.Minimize(lb, rb, r, method, max_iter)

@@ -50,3 +50,11 @@ class interval(object):
         except ZeroDivisionError:
             print("ERROR: Zero division in \'GetStronginCharacteristic\' function.")
             sys.exit(2)
+
+    def GetBruteForceCharacteristic(self, _lip):
+        try:
+            self._i_R = self.GetIRb()[0] - self.GetILb()[0]
+        except TypeError:
+            print("ERROR: Incorrect type of variable in \'GetBruteForceCharacteristic\' function.")
+            sys.exit(1)
+
