@@ -16,6 +16,7 @@ class ModuleTests(unittest.TestCase):
         r = "1"
         method = "Piyavsky"
         max_iter = 1
+        class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
 
         # Validation
@@ -29,7 +30,8 @@ class ModuleTests(unittest.TestCase):
         rb = 1.0
         r = 1.0
         method = "Piyavsky"
-        max_iter = 1    
+        max_iter = 1
+        class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
 
         # Validation
@@ -43,7 +45,8 @@ class ModuleTests(unittest.TestCase):
         rb = "1.0"
         r = 1.0
         method = "Piyavsky"
-        max_iter = 1    
+        max_iter = 1
+        class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
 
         # Validation
@@ -57,7 +60,8 @@ class ModuleTests(unittest.TestCase):
         rb = 1.0
         r = 1.0
         method = "Piyavsky"
-        max_iter = "1"  
+        max_iter = "1"
+        class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
 
         # Validation
@@ -72,6 +76,7 @@ class ModuleTests(unittest.TestCase):
         method = "Piyavsky"
         max_iter = None
         raise_except = False
+        class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
         try:
             class_obj.Minimize(lb, rb, r, method, max_iter)
@@ -89,10 +94,11 @@ class ModuleTests(unittest.TestCase):
         expected_func_value = -4.92057565
         method = "Piyavsky"
         max_iter = 800
+        class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
-        class_obj.Minimize(lb, rb, r, method, max_iter)
+        res = class_obj.Minimize(lb, rb, r, method, max_iter)
         # Validation
-        self.assertAlmostEqual(class_obj.minimum[1], expected_func_value)
+        self.assertAlmostEqual(res.minimum[1], expected_func_value)
 
     def test_CorrectMinFuncValueStrongin(self):
         # Initialization
@@ -103,10 +109,11 @@ class ModuleTests(unittest.TestCase):
         expected_func_value = -4.920616335
         method = "Strongin"
         max_iter = 800
+        class_obj.SetFunctionParameters(2, 3, 3, 5)
         # Action
-        class_obj.Minimize(lb, rb, r, method, max_iter)
+        res = class_obj.Minimize(lb, rb, r, method, max_iter)
         # Validation
-        self.assertAlmostEqual(class_obj.minimum[1], expected_func_value)
+        self.assertAlmostEqual(res.minimum[1], expected_func_value)
         
 
 if __name__ == '__main__':
