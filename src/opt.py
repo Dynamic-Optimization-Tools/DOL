@@ -7,21 +7,7 @@ sys.path.insert(0, root_dir)
 from src.interval import interval
 from src.solution import solution
 
-class opt(object):
-    _lb = None
-    _rb = None
-    _r = None
-    _max_iter = 100
-    _minimum = None
-    _spent_iter = 0
-    _eps = 0.01
-    _sol = solution()
-    _use_method = None
-    _a = None
-    _b = None
-    _c = None
-    _d = None
-    
+class opt(object):    
     class methods():
         Piyavsky = "Piyavsky"
         Strongin = "Strongin"
@@ -42,7 +28,19 @@ class opt(object):
                   }
     
     def __init__(self):
-        pass
+        self._lb = None
+        self._rb = None
+        self._r = None
+        self._max_iter = 100
+        self._minimum = None
+        self._spent_iter = 0
+        self._eps = 0.01
+        self._sol = solution()
+        self._use_method = None
+        self._a = None
+        self._b = None
+        self._c = None
+        self._d = None
 
     def __SetLb(self, _lb):
         self._lb = _lb

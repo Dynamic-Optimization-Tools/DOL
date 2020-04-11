@@ -1,7 +1,5 @@
 class solution(object):
-    minimum = None
-    points = []
-    spent_iter = None
-
     def __init__(self):
-        pass
+        self.minimum = None
+        self.points = []
+        self.spent_iter = None

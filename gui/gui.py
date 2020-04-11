@@ -290,7 +290,6 @@ class Ui_MainWindow(object):
         self.solutionY.setText("")
         self.solutionIterCount.setText("")
         self.MplWidget.canvas.axes.cla()
-        self.MplWidget.canvas.axes.clear()
         self.MplWidget.canvas.draw()
 
     def DisplaySolution(self):
