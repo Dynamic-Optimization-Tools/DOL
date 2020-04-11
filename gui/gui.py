@@ -290,7 +290,7 @@ class Ui_MainWindow(object):
         self.MplWidget.canvas.axes.plot(x, y)
         
         for point in solution.points:
-            self.MplWidget.canvas.axes.plot(point[0], point[1], color="green", marker="*")
+            self.MplWidget.canvas.axes.plot(point[0], 0, color="green", marker="*")
 
         self.MplWidget.canvas.axes.plot(solution.minimum[0], solution.minimum[1], color="red", marker="o")
         self.solutionX.setText("x = " + str(round(solution.minimum[0], 7)))
