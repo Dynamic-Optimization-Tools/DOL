@@ -17,8 +17,9 @@ class params:
     right_bound = None
     max_iter = None
     method = None
+    accuracy = None
 
-    def __init__(self, a=1, b=1, c=1, d=1, r=2, left_bound=0 , right_bound=10, max_iter=100):
+    def __init__(self, a=1, b=1, c=1, d=1, r=2, left_bound=0 , right_bound=10, max_iter=100, accuracy=0.01):
         self.a = a
         self.b = b
         self.c = c
@@ -27,6 +28,7 @@ class params:
         self.left_bound = left_bound
         self.right_bound = right_bound
         self.max_iter = max_iter
+        self.accuracy = accuracy
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -212,6 +214,16 @@ class Ui_MainWindow(object):
         self.maxIterCount = QtWidgets.QLineEdit(self.groupBox_4)
         self.maxIterCount.setObjectName("maxIterCount")
         self.horizontalLayout.addWidget(self.maxIterCount)
+        self.labelacc = QtWidgets.QLabel(self.groupBox_4)
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(12)
+        self.labelacc.setFont(font)
+        self.labelacc.setObjectName("labelacc")
+        self.horizontalLayout.addWidget(self.labelacc)
+        self.accuracy = QtWidgets.QLineEdit(self.groupBox_4)
+        self.accuracy.setObjectName("accuracy")
+        self.horizontalLayout.addWidget(self.accuracy)
         self.verticalLayout_3.addWidget(self.groupBox_4)
         self.gridLayout.addWidget(self.groupBox, 1, 0, 1, 2)
         MainWindow.setCentralWidget(self.centralwidget)
@@ -250,6 +262,7 @@ class Ui_MainWindow(object):
         self.groupBox_4.setTitle(_translate("MainWindow", "Дополнительные параметры"))
         self.labelR.setText(_translate("MainWindow", "Коэффициент надежности"))
         self.labelIter.setText(_translate("MainWindow", "Максимальное число итераций"))
+        self.labelacc.setText(_translate("MainWindow", "Точность"))
 
     def initInputContainers(self):
         default_params = params()
@@ -261,6 +274,7 @@ class Ui_MainWindow(object):
         self.funcParamRightB.setText(str(default_params.right_bound))
         self.r.setText(str(default_params.r))
         self.maxIterCount.setText(str(default_params.max_iter))
+        self.accuracy.setText(str(default_params.accuracy))
         self.radioButtonPiyavsky.setChecked(True)
 
     def run(self):
@@ -290,6 +304,7 @@ class Ui_MainWindow(object):
         opt_params.left_bound = float(self.funcParamLeftB.text())
         opt_params.right_bound = float(self.funcParamRightB.text())
         opt_params.max_iter = int(self.maxIterCount.text())
+        opt_params.accuracy = float(self.accuracy.text())
         opt_params.r = float(self.r.text())
 
         if self.radioButtonBrutforce.isChecked():
@@ -304,7 +319,7 @@ class Ui_MainWindow(object):
                 print(param, "=", getattr(opt_params, param), type(getattr(opt_params, param)))
 
         optimizer.SetFunctionParameters(opt_params.a, opt_params.b, opt_params.c, opt_params.d)
-        solution = optimizer.Minimize(opt_params.left_bound, opt_params.right_bound, opt_params.r, opt_params.method, max_iter=opt_params.max_iter)
+        solution = optimizer.Minimize(opt_params.left_bound, opt_params.right_bound, opt_params.r, opt_params.method, max_iter=opt_params.max_iter, eps=opt_params.accuracy)
 
         points_multiplier = 100
         num_points = int(abs(opt_params.right_bound - opt_params.left_bound) * points_multiplier)
