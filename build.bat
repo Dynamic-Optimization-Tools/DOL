@@ -1,1 +1,1 @@
-pyinstaller -F --noconsole .\main.py --icon=icon.ico
+pyinstaller -F --noconsole .\main.py
